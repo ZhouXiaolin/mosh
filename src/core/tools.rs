@@ -5,7 +5,7 @@ use std::process::Command;
 pub fn definitions() -> Vec<Value> {
     vec![json!({
         "name": "bash",
-        "description": "Execute a bash command and return stdout/stderr. Use this for ALL operations including file reading (cat, head, tail), file writing (tee, heredoc), file editing (sed, perl -i, python scripts), and any other system commands.",
+        
         "input_schema": {
             "type": "object",
             "properties": {
@@ -16,10 +16,6 @@ pub fn definitions() -> Vec<Value> {
                 "timeout": {
                     "type": "integer",
                     "description": "Timeout in seconds. Default 120."
-                },
-                "description": {
-                    "type": "string",
-                    "description": "A brief description of the command with one line."
                 }
             },
             "required": ["command"]

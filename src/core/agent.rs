@@ -8,22 +8,18 @@ use tokio::sync::{Mutex, mpsc};
 use crate::core::api::{AnthropicClient, ContentBlock, Message, MessageContent};
 use crate::core::tools;
 
-pub const SYSTEM_PROMPT: &str = "You are a coding assistant. You have access to various tools.\n\
-For file operations, use bash with standard Unix tools:\n\
-- Read files: cat, head, tail, less\n\
-- Write files: tee, cat with heredoc, echo with redirect\n\
-- Edit files: sed, perl -pi -e, python -c\n\
-- Search: grep, find, rg\n\
-You can also use python and perl scripts for complex transformations.\n\
-Work step by step.\n\n\
-## Response Format\n\
-Start every response with:\n\
-```\n\
-`★ Insight ─────────────────────────────────────`\n\
-[2-3 lines of key design decisions/thoughts/insights]\n\
-`─────────────────────────────────────────────────`\n\
-```\n\
-Then provide the detailed response.";
+/// System prompt 由多模块在编译期拼接而成，见 `src/core/prompt/*.md`。
+pub const SYSTEM_PROMPT: &str = concat!(
+    include_str!("prompt/identity.md"),
+    "\n\n",
+    include_str!("prompt/tools_general.md"),
+    "\n\n",
+    include_str!("prompt/tools_specialized.md"),
+    "\n\n",
+    include_str!("prompt/work_style.md"),
+    "\n\n",
+    include_str!("prompt/response_format.md"),
+);
 
 /// Events emitted by the agent loop in real time.
 #[derive(Debug, Clone)]
@@ -60,7 +56,7 @@ pub async fn run_agent_loop(
                     }
                 }
                 ContentBlock::ToolUse { id, name, input } => {
-                    let desc = input["description"].as_str().unwrap_or("").to_string();
+                    let desc = input["command"].as_str().unwrap_or("").to_string();
                     let _ = tx.send(AgentEvent::ToolCall {
                         name: name.clone(),
                         description: desc,

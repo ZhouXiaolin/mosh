@@ -40,10 +40,19 @@ pub fn App(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
                     if description.is_empty() {
                         stdout_msgs.println(format!("\x1b[32m⏺ {}()\x1b[0m", label));
                     } else {
-                        stdout_msgs.println(format!("\x1b[32m⏺ {}({})\x1b[0m", label, description));
+                        // Truncate long commands for display
+                        let max_len = 80;
+                        let display_cmd = if description.len() > max_len {
+                            format!("{}...", &description[..max_len])
+                        } else {
+                            description.clone()
+                        };
+                        stdout_msgs.println(format!("\x1b[32m⏺ {}({})\x1b[0m", label, display_cmd));
                     }
                 }
-                AppMessage::ToolResult { .. } => {}
+                AppMessage::ToolResult { preview } => {
+                    stdout_msgs.println(format!("\x1b[33m✓ {}\x1b[0m", preview));
+                }
                 AppMessage::AgentError(e) => {
                     stdout_msgs.println(format!("\x1b[31mError: {}\x1b[0m", e));
                 }
