@@ -27,26 +27,26 @@ pub fn StatusLine(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
             match msg {
                 AppMessage::AgentTaskStarted => {
                     is_proc.set(true);
-                    if let Some(s) = crate::core::tasks::read_task_content(&*task_file_ref) {
-                        if s.contains("- [") {
-                            task_content_ref.set(Some(s));
-                        }
+                    if let Some(s) = crate::core::tasks::read_task_content(&task_file_ref)
+                        && s.contains("- [")
+                    {
+                        task_content_ref.set(Some(s));
                     }
                 }
                 AppMessage::AgentCompleted | AppMessage::AgentError(_) => {
                     is_proc.set(false);
-                    if let Some(s) = crate::core::tasks::read_task_content(&*task_file_ref) {
-                        if s.contains("- [") {
-                            task_content_ref.set(Some(s));
-                        }
+                    if let Some(s) = crate::core::tasks::read_task_content(&task_file_ref)
+                        && s.contains("- [")
+                    {
+                        task_content_ref.set(Some(s));
                     }
                 }
                 AppMessage::TasksUpdated { done, total } => {
                     task_sum.set(Some((done, total)));
-                    if let Some(s) = crate::core::tasks::read_task_content(&*task_file_ref) {
-                        if s.contains("- [") {
-                            task_content_ref.set(Some(s));
-                        }
+                    if let Some(s) = crate::core::tasks::read_task_content(&task_file_ref)
+                        && s.contains("- [")
+                    {
+                        task_content_ref.set(Some(s));
                     }
                 }
                 _ => {}
@@ -61,14 +61,13 @@ pub fn StatusLine(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
     hooks.use_future(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(2)).await;
-            if let Some(s) = crate::core::tasks::read_task_content(&*task_file_poll) {
-                if s.contains("- [") {
-                    task_content_poll.set(Some(s));
-                    if let Some((done, total)) =
-                        crate::core::tasks::read_task_summary(&*task_file_poll)
-                    {
-                        task_summary_poll.set(Some((done, total)));
-                    }
+            if let Some(s) = crate::core::tasks::read_task_content(&task_file_poll)
+                && s.contains("- [")
+            {
+                task_content_poll.set(Some(s));
+                if let Some((done, total)) = crate::core::tasks::read_task_summary(&task_file_poll)
+                {
+                    task_summary_poll.set(Some((done, total)));
                 }
             }
         }

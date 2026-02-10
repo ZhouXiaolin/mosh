@@ -5,7 +5,7 @@ use std::process::Command;
 pub fn definitions() -> Vec<Value> {
     vec![json!({
         "name": "bash",
-        
+
         "input_schema": {
             "type": "object",
             "properties": {

@@ -1,14 +1,17 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
 
 /// Build the task-list section of the system prompt. The model must use **bash**
 /// only for all task operations, via the four named bash tasks below.
-pub fn format_task_prompt(task_file_path: &PathBuf) -> String {
+pub fn format_task_prompt(task_file_path: &Path) -> String {
     let path_str = task_file_path.display().to_string();
-    let perl_cmd = format!(r#"perl -i -pe 's/^- \\[ \\] N\\./- [x] N./' "{}""#, path_str);
+    let perl_cmd = format!(
+        r#"perl -i -pe 's/^- \\[ \\] N\\./- [x] N./' "{}""#,
+        path_str
+    );
     format!(
         include_str!("prompt/task_protocol.md"),
         path_str = path_str,
@@ -67,7 +70,7 @@ pub fn init_task_file() -> Result<PathBuf> {
 }
 
 /// Write the current task list to the task file.
-pub fn write_tasks(path: &PathBuf, lines: &[String]) -> Result<()> {
+pub fn write_tasks(path: &Path, lines: &[String]) -> Result<()> {
     let mut content = format!("# Tasks — {}\n\n", project_name());
     for line in lines {
         content.push_str(line);
@@ -78,12 +81,12 @@ pub fn write_tasks(path: &PathBuf, lines: &[String]) -> Result<()> {
 }
 
 /// Read full task file content for display in the UI (e.g. status line).
-pub fn read_task_content(path: &PathBuf) -> Option<String> {
+pub fn read_task_content(path: &Path) -> Option<String> {
     fs::read_to_string(path).ok()
 }
 
 /// Read task summary from a task file: (completed, total).
-pub fn read_task_summary(path: &PathBuf) -> Option<(usize, usize)> {
+pub fn read_task_summary(path: &Path) -> Option<(usize, usize)> {
     let content = fs::read_to_string(path).ok()?;
     let total = content
         .lines()

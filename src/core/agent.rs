@@ -106,7 +106,11 @@ pub async fn run_agent_loop(
             content: MessageContent::Blocks(results),
         });
 
-        let pending = pending_user_messages.lock().await.drain(..).collect::<Vec<_>>();
+        let pending = pending_user_messages
+            .lock()
+            .await
+            .drain(..)
+            .collect::<Vec<_>>();
         if !pending.is_empty() {
             let text = pending.join("\n\n");
             messages.lock().await.push(Message {

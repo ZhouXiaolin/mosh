@@ -6,11 +6,11 @@ System prompt 在编译期由多个 md 文件通过 `concat!(include_str!(...), 
 
 | 文件 | 职责 |
 |------|------|
-| `identity.md` | **角色**：你是谁、能做什么（分析需求、编排任务、通过工具与任务列表推进多步目标） |
-| `tools_general.md` | **通用工具**：bash / Unix 工具（读写编辑搜索）、Python/Perl 脚本的使用范围 |
+| `identity.md` | **定位**：通用智能助手的 meta 执行协议（收集信息、规划分解、执行验证、可复现交付） |
+| `tools_general.md` | **通用工具**：bash 的使用边界与常用操作范式（本地读写/搜索/脚本/网络请求） |
 | `tools_specialized.md` | **特例化工具**：任务列表必须用四类 bash 任务；MCP 能力通过 bash + curl 调用，且无 tool-use 块 |
-| `work_style.md` | **工作方式**：逐步执行、不跳步、小步可验证 |
-| `response_format.md` | **回复格式**：每轮开头的 Insight 块与正文要求 |
+| `work_style.md` | **工作方式**：收集信息→规划→执行→验证→交付的通用流程 |
+| `response_format.md` | **回复格式**：每轮开头的 Insight 块与可验证交付要求 |
 
 ## 组装顺序
 
