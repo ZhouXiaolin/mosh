@@ -1,0 +1,16 @@
+[package]
+name = "mash"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.7", features = ["json"] }
+clap = { version = "4", features = ["derive"] }
+crossterm = "0.29"
+dirs = "6.0.0"
+iocraft = "0.7"
+reqwest = { version = "0.13", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
