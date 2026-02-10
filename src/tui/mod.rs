@@ -12,6 +12,7 @@ use crate::core::agent;
 use crate::core::api::{AnthropicClient, Message};
 use crate::core::config::ApiConfig;
 use crate::core::mcp::McpManager;
+use crate::core::skills::{self, SkillInfo};
 use crate::core::tools;
 
 /// Messages broadcast between TUI components.
@@ -38,6 +39,7 @@ pub struct AppContext {
     /// 任务执行期间回车发送的内容会先进入此队列，当前 loop 结束后再一并加入下一轮。
     pub pending_user_messages: Arc<Mutex<Vec<String>>>,
     pub task_file: Arc<std::path::PathBuf>,
+    pub skills: Arc<Vec<SkillInfo>>,
 }
 
 pub async fn run() -> Result<()> {
@@ -75,11 +77,13 @@ pub async fn run() -> Result<()> {
     });
     let base_url = format!("http://127.0.0.1:{}", mcp_http_port);
     let task_file = crate::core::tasks::init_task_file()?;
+    let skills = skills::scan_skills();
     let system_prompt = format!(
-        "{}{}{}",
+        "{}{}{}{}",
         agent::SYSTEM_PROMPT,
         crate::core::mcp::format_mcp_tools_for_prompt(&*mcp.lock().await, &base_url),
         crate::core::tasks::format_task_prompt(&task_file),
+        skills::format_skills_for_prompt(&skills),
     );
     let client = Arc::new(AnthropicClient::new(config, system_prompt));
 
@@ -95,6 +99,7 @@ pub async fn run() -> Result<()> {
         messages: Arc::new(Mutex::new(Vec::new())),
         pending_user_messages: Arc::new(Mutex::new(Vec::new())),
         task_file: Arc::new(task_file),
+        skills: Arc::new(skills),
     };
 
     element! {
