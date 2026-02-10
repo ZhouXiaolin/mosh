@@ -6,6 +6,8 @@ use std::path::{Path, PathBuf};
 pub struct SkillInfo {
     pub name: String,
     pub description: String,
+    /// Absolute path to the skill.md file.
+    pub path: String,
 }
 
 /// Scan `~/.claude/skills/` for skill.md files and extract name + description from YAML frontmatter.
@@ -38,7 +40,8 @@ pub fn scan_skills() -> Vec<SkillInfo> {
         let Ok(content) = fs::read_to_string(&skill_md) else {
             continue;
         };
-        if let Some(info) = parse_frontmatter(&content) {
+        if let Some(mut info) = parse_frontmatter(&content) {
+            info.path = skill_md.to_string_lossy().to_string();
             skills.push(info);
         }
     }
@@ -86,6 +89,7 @@ fn parse_frontmatter(content: &str) -> Option<SkillInfo> {
     Some(SkillInfo {
         name: name?,
         description: description.unwrap_or_default(),
+        path: String::new(), // filled by caller
     })
 }
 
@@ -96,10 +100,17 @@ pub fn format_skills_for_prompt(skills: &[SkillInfo]) -> String {
     }
     let mut out = String::from("\n\n## Available Skills\n\n");
     out.push_str(
-        "The following skills are available. The user can invoke them with `/skill-name`.\n\n",
+        "The user can invoke skills by typing `/skill-name` in the input. \
+         When a skill is invoked, you MUST first read the corresponding skill.md file \
+         to understand the skill's full instructions before executing it.\n\n\
+         If a skill produces output files, save them to the current working directory \
+         by default, or to the directory specified by the user.\n\n",
     );
     for skill in skills {
-        out.push_str(&format!("- **{}**: {}\n", skill.name, skill.description));
+        out.push_str(&format!(
+            "- **{}**: {} (path: `{}`)\n",
+            skill.name, skill.description, skill.path
+        ));
     }
     out
 }

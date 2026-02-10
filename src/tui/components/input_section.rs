@@ -98,7 +98,10 @@ pub fn InputSection(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
                 }
 
                 let buf_snapshot = input_buf.read().clone();
-                let in_menu = buf_snapshot.starts_with('/');
+                // Menu is active only when input is "/" optionally followed by a
+                // single word (no spaces). Once a space appears the user has moved
+                // past command selection and is typing arguments.
+                let in_menu = buf_snapshot.starts_with('/') && !buf_snapshot[1..].contains(' ');
 
                 match key.code {
                     // Menu navigation: Up
@@ -232,7 +235,7 @@ pub fn InputSection(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
 
     let buf = input_buf.read().clone();
     let selected_idx = *menu_index.read();
-    let show_menu = buf.starts_with('/');
+    let show_menu = buf.starts_with('/') && !buf[1..].contains(' ');
 
     // Build menu elements
     let menu_items: Vec<AnyElement<'static>> = if show_menu {
@@ -247,7 +250,13 @@ pub fn InputSection(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
                 // Truncate long descriptions
                 let max_len = (width as usize).saturating_sub(8);
                 let label = if label.len() > max_len {
-                    format!("{}…", &label[..max_len])
+                    let end = label
+                        .char_indices()
+                        .map(|(i, _)| i)
+                        .take_while(|&i| i <= max_len)
+                        .last()
+                        .unwrap_or(0);
+                    format!("{}…", &label[..end])
                 } else {
                     label
                 };

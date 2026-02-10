@@ -40,10 +40,16 @@ pub fn App(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
                     if description.is_empty() {
                         stdout_msgs.println(format!("\x1b[32m⏺ {}()\x1b[0m", label));
                     } else {
-                        // Truncate long commands for display
+                        // Truncate long commands for display (char-boundary safe)
                         let max_len = 80;
                         let display_cmd = if description.len() > max_len {
-                            format!("{}...", &description[..max_len])
+                            let end = description
+                                .char_indices()
+                                .map(|(i, _)| i)
+                                .take_while(|&i| i <= max_len)
+                                .last()
+                                .unwrap_or(0);
+                            format!("{}...", &description[..end])
                         } else {
                             description.clone()
                         };
