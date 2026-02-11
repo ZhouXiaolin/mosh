@@ -3,6 +3,47 @@ use iocraft::prelude::*;
 use crate::tui::pages::main_page::MainPage;
 use crate::tui::{AppContext, AppMessage};
 
+/// Replace backtick-wrapped segments (`` `text` ``) with bright-blue ANSI output, removing the backticks.
+fn highlight_inline_code(input: &str) -> String {
+    let mut result = String::with_capacity(input.len());
+    let mut chars = input.char_indices().peekable();
+
+    while let Some(&(i, ch)) = chars.peek() {
+        if ch == '`' {
+            // Look for matching closing backtick
+            chars.next(); // consume opening backtick
+            let start = i + 1;
+            let mut found_close = false;
+            while let Some(&(j, c)) = chars.peek() {
+                if c == '`' {
+                    // Found closing backtick
+                    let code_text = &input[start..j];
+                    if !code_text.is_empty() {
+                        result.push_str("\x1b[94m");
+                        result.push_str(code_text);
+                        result.push_str("\x1b[0m");
+                    }
+                    chars.next(); // consume closing backtick
+                    found_close = true;
+                    break;
+                }
+                chars.next();
+            }
+            if !found_close {
+                // No matching close – output the opening backtick literally
+                result.push('`');
+                result.push_str(&input[start..]);
+                break;
+            }
+        } else {
+            result.push(ch);
+            chars.next();
+        }
+    }
+
+    result
+}
+
 #[component]
 pub fn App(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
     let (stdout, _stderr) = hooks.use_output();
@@ -33,7 +74,7 @@ pub fn App(mut hooks: Hooks) -> impl Into<AnyElement<'static>> {
                     stdout_msgs.println(format!("\x1b[36m▶ {}\x1b[0m", text));
                 }
                 AppMessage::AssistantLine(line) => {
-                    stdout_msgs.println(&line);
+                    stdout_msgs.println(highlight_inline_code(&line));
                 }
                 AppMessage::ToolCall { name, description } => {
                     let label = if name == "bash" { "Bash" } else { &name };

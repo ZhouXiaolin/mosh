@@ -40,7 +40,6 @@
 
 ## 下一步规划
 
-- **Skills/Command**：在现有 bash 能力上挂接 skills。
 - **Agent team**：多 agent 协作（分工、接力、评审），仍保持「bash is all you need」的单一工具哲学，在编排层扩展。
 
 ---
